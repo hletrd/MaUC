@@ -1,9 +1,12 @@
 package com.attention.driverattention
 
+import android.Manifest
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.pm.PackageManager
 import android.graphics.*
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -19,6 +22,7 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.attention.driverattention.ui.main.MainFragment
@@ -49,6 +53,20 @@ class MainActivity : AppCompatActivity() {
 
     private var unaware_count = 0
 
+
+    fun permissionsGranted(): Boolean {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+            val hasCameraPermission = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!hasCameraPermission) {
+                return false
+            }
+        }
+        return true
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
@@ -57,6 +75,15 @@ class MainActivity : AppCompatActivity() {
                     .replace(R.id.container, MainFragment.newInstance())
                     .commitNow()
         }
+
+        //check for camera permission and request it
+        if (permissionsGranted() == false) {
+            val permissions = arrayOf(
+                Manifest.permission.CAMERA,
+            )
+            ActivityCompat.requestPermissions(this, permissions, 1)
+        }
+
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
