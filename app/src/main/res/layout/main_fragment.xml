@@ -16,7 +16,7 @@
         android:layout_marginBottom="32dp"
         android:clickable="true"
         android:src="@android:drawable/ic_menu_manage"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/container"
         app:layout_constraintEnd_toEndOf="@+id/container" />
 
     <FrameLayout
@@ -57,6 +57,7 @@
         android:layout_height="wrap_content"
         android:background="@color/design_default_color_primary_dark"
         android:text=""
+        android:textSize="24sp"
         android:textAlignment="center"
         android:textColor="@color/design_default_color_surface"
 

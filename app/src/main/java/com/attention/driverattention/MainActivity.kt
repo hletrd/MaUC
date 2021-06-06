@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity() {
         input_pass.hint = "Password"
 
         input_user.setText(sharedPref.getString("user", ""))
-        input_user.setText(sharedPref.getString("pass", ""))
+        input_pass.setText(sharedPref.getString("pass", ""))
 
         input_user.inputType = InputType.TYPE_CLASS_TEXT
         input_pass.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
@@ -140,22 +140,31 @@ class MainActivity : AppCompatActivity() {
                 conn.doOutput = true
 
                 val jsoninput: String = "{\"username\": \"$user\", \"password\": \"$pass\"}"
-                conn.outputStream.use { os ->
-                    val input: ByteArray = jsoninput.toByteArray()
-                    os.write(input, 0, input.size)
-                }
-
-                BufferedReader(
-                    InputStreamReader(conn.inputStream, "utf-8")
-                ).use { br ->
-                    val response = StringBuilder()
-                    var responseLine: String? = null
-                    while (br.readLine().also { responseLine = it } != null) {
-                        response.append(responseLine!!.trim { it <= ' ' })
+                try {
+                    conn.outputStream.use { os ->
+                        val input: ByteArray = jsoninput.toByteArray()
+                        os.write(input, 0, input.size)
                     }
-                    auth_token = JSONObject(response.toString()).getString("access_token")
 
-                    Log.w("Token", auth_token)
+
+                    BufferedReader(
+                        InputStreamReader(conn.inputStream, "utf-8")
+                    ).use { br ->
+                        val response = StringBuilder()
+                        var responseLine: String? = null
+                        while (br.readLine().also { responseLine = it } != null) {
+                            response.append(responseLine!!.trim { it <= ' ' })
+                        }
+                        auth_token = JSONObject(response.toString()).getString("access_token")
+
+                        Log.w("Token", auth_token)
+                    }
+                } catch (e: Exception) {
+                    this.runOnUiThread(Runnable {
+                        var tview = findViewById<TextView>(R.id.textView)
+                        tview.setText("Authentication failed!")
+                        tview.setBackgroundColor(Color.MAGENTA)
+                    })
                 }
             }
         })
@@ -307,7 +316,9 @@ class MainActivity : AppCompatActivity() {
                     val stream = ByteArrayOutputStream()
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)
                     val byteArray = stream.toByteArray()
+                    val size = byteArray.size
                     var response: String = ""
+                    var start = System.currentTimeMillis()
 
                     try {
                         val multipart =
@@ -319,6 +330,8 @@ class MainActivity : AppCompatActivity() {
                         multipart.addFilePart("img", byteArray)
 
                         response = multipart.finish()
+
+                        var end = System.currentTimeMillis()
                         val parsed = JSONObject(response.toString())
                         state_id = parsed.getString("state_id")
                         state = parsed.getString("state")
@@ -327,7 +340,7 @@ class MainActivity : AppCompatActivity() {
 
                         this.runOnUiThread(Runnable {
                             var tview = findViewById<TextView>(R.id.textView)
-                            tview.text = state
+                            tview.setText(state)
 
                             if (state_id.equals("0")) {
                                 tview.setBackgroundColor(Color.RED)
@@ -336,9 +349,21 @@ class MainActivity : AppCompatActivity() {
                                 tview.setBackgroundColor(Color.GREEN)
                                 unaware_count = 0
                             }
+
+                            var time = end - start
+
+                            var tview_debug = findViewById<TextView>(R.id.textView_debug)
+                            var debug_text = ""
+                            debug_text += "Image size: " + (size/1024) + "kiB, Latency: " + time + "ms"
+                            tview_debug.setText(debug_text)
                         })
                     } catch (e: Exception) {
-                        Log.w("Error", "Networking exception")
+                        this.runOnUiThread(Runnable {
+                            Log.w("Error", "Networking exception")
+                            var tview = findViewById<TextView>(R.id.textView)
+                            tview.setText("Networking error!")
+                            tview.setBackgroundColor(Color.MAGENTA)
+                        })
                     }
                 }
             }
