@@ -53,6 +53,9 @@ class MainActivity : AppCompatActivity() {
 
     private var unaware_count = 0
 
+    private var image_width = 256
+    private var image_height = 256
+
 
     fun permissionsGranted(): Boolean {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
@@ -299,7 +302,7 @@ class MainActivity : AppCompatActivity() {
         preview.setSurfaceProvider(previewView.surfaceProvider)
 
         val imageAnalysis = ImageAnalysis.Builder()
-            .setTargetResolution(Size(1080, 1920))
+            .setTargetResolution(Size(image_width, image_height))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
 
@@ -343,18 +346,22 @@ class MainActivity : AppCompatActivity() {
                             tview.setText(state)
 
                             if (state_id.equals("0")) {
-                                tview.setBackgroundColor(Color.RED)
+                                tview.setBackgroundColor(Color.rgb(192, 64, 64))
                                 unaware_count += 1
                             } else {
                                 tview.setBackgroundColor(Color.GREEN)
                                 unaware_count = 0
                             }
 
+                            if (unaware_count >= 5) {
+                                tview.setBackgroundColor(Color.rgb(255, 128, 0))
+                            }
+
                             var time = end - start
 
                             var tview_debug = findViewById<TextView>(R.id.textView_debug)
                             var debug_text = ""
-                            debug_text += "Image size: " + (size/1024) + "kiB, Latency: " + time + "ms"
+                            debug_text += "Image size: " + (size/1024) + "kiB ($image_width*$image_height)\nLatency: " + time + "ms"
                             tview_debug.setText(debug_text)
                         })
                     } catch (e: Exception) {
