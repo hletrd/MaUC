@@ -1,5 +1,6 @@
 package com.attention.driverattention.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.attention.driverattention.R
+import com.attention.driverattention.SettingsActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 
@@ -32,7 +34,8 @@ class MainFragment : Fragment() {
 
         var floatingActionButton = view.findViewById<FloatingActionButton>(R.id.floatingActionButton2)
         floatingActionButton.setOnClickListener {
-
+            val intent = Intent(this.context, SettingsActivity::class.java)
+            startActivity(intent)
         }
     }
 
